@@ -1,0 +1,59 @@
+name: Deploy CFSM Build Branch
+
+# CF-Server-Monitor's theme store proxies `index.html` and `assets/` from a branch that contains
+# nothing but the build output. This workflow rebuilds and force-updates the `build` branch.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cfsm-build-branch
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install
+      # build-only skips vue-tsc so a type-only error cannot block deployment; run `bun run build` locally to type-check
+      - run: bun run build-only
+
+      - name: Push index.html + assets/ to build branch
+        run: |
+          VERSION=$(node -p "require('./komari-theme.json').version")
+          SHA=$(git rev-parse --short HEAD)
+          mkdir -p /tmp/dist-build
+          cp dist/index.html /tmp/dist-build/
+          cp -r dist/assets /tmp/dist-build/
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          if git ls-remote --exit-code --heads origin build; then
+            git fetch origin build:refs/remotes/origin/build
+            git worktree add -B build /tmp/build-branch origin/build
+          else
+            git worktree add --detach /tmp/build-branch
+            cd /tmp/build-branch
+            git switch --orphan build
+          fi
+
+          cd /tmp/build-branch
+          git rm -r -q --ignore-unmatch .
+          cp -r /tmp/dist-build/. .
+
+          git add -A
+          git commit --allow-empty -m "build: Glassmorphism for CFSM v${VERSION} (${SHA})"
+          git push origin build
