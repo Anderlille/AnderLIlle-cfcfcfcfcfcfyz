@@ -13,7 +13,7 @@
 ![Bun](https://img.shields.io/badge/Bun-%3E%3D1.2-000000?style=for-the-badge&logo=bun)
 ![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)
 
-**[📥 下载 Release](https://github.com/Anderlille/AnderLIlle-cfcfcfcfcfcfyz/releases)** ·
+**[📥 下载 Release](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism)** ·
 **[🚀 安装](#-安装--升级)** ·
 **[✨ 功能](#-节点详情页全面升级)** ·
 **[⚙️ 设置](#️-主题设置)** ·
